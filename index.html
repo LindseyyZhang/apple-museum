@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>苹果博物馆 | Apple Museum</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600;700&family=Inter:wght@300;400;500;600;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #c8c4d0;
+            --bg-card: #d8d4e0;
+            --bg-accent: #f5ddd8;
+            --bg-deep: #b8b4c0;
+            --text-primary: #1a1a2e;
+            --text-secondary: #6b6b7b;
+            --text-muted: #9a9aaa;
+            --border: rgba(26, 26, 46, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .serif {
+            font-family: 'Noto Serif SC', 'Cormorant Garamond', serif;
+        }
+
+        /* Navigation */
+        .nav-bar {
+            padding: 20px 40px;
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .nav-bar a {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-decoration: none;
+            letter-spacing: 0.02em;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+
+        .nav-bar a:hover, .nav-bar a.active {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .nav-arrow {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: grid;
+            grid-template-columns: 420px 1fr;
+            gap: 0;
+            max-width: 1600px;
+            margin: 0 auto;
+            height: calc(100vh - 61px);
+        }
+
+        /* Left Panel - Scrollable */
+        .left-panel {
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 32px 36px;
+            background: var(--bg-primary);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .left-panel::-webkit-scrollbar {
+            width: 4px;
+        }
+        .left-panel::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .left-panel::-webkit-scrollbar-thumb {
+            background: var(--text-muted);
+            border-radius: 2px;
+        }
+
+        .museum-title {
+            font-family: 'Inter', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 900;
+            line-height: 1.1;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+            letter-spacing: -0.02em;
+            flex-shrink: 0;
+        }
+
+        .museum-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+            flex-shrink: 0;
+        }
+
+        /* Empty State */
+        .empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.4;
+            min-height: 300px;
+        }
+
+        .empty-apple {
+            width: 100px;
+            height: 100px;
+            border: 3px dashed var(--text-muted);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .empty-text {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        /* Active Display */
+        .display-area {
+            display: none;
+            flex-direction: column;
+            animation: slideIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .display-area.active {
+            display: flex;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Image Stage - Compact */
+        .image-stage {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4/3;
+            max-height: 280px;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            cursor: grab;
+            background: var(--bg-deep);
+            flex-shrink: 0;
+        }
+
+        .image-stage:active {
+            cursor: grabbing;
+        }
+
+        .image-stage img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .image-stage:hover img {
+            transform: scale(1.05);
+        }
+
+        /* Oil texture overlay */
+        .oil-texture {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.12;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            mix-blend-mode: multiply;
+        }
+
+        /* Floating particles */
+        .image-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: particleFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes particleFloat {
+            0%, 100% {
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+            15% {
+                opacity: 0.8;
+            }
+            85% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-80px) translateX(15px);
+                opacity: 0;
+            }
+        }
+
+        /* Image info badge */
+        .image-badge {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(26, 26, 46, 0.75);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.03em;
+            transform: translateY(-8px);
+            opacity: 0;
+            transition: all 0.4s ease;
+        }
+
+        .image-stage:hover .image-badge {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Color dots */
+        .color-dots {
+            position: absolute;
+            bottom: 16px;
+            left: 16px;
+            display: flex;
+            gap: 6px;
+            transform: translateY(8px);
+            opacity: 0;
+            transition: all 0.4s ease;
+        }
+
+        .image-stage:hover .color-dots {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .color-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .color-dot:hover {
+            transform: scale(1.3);
+        }
+
+        /* Title Section */
+        .detail-header {
+            margin-bottom: 16px;
+            flex-shrink: 0;
+        }
+
+        .detail-name {
+            font-size: 1.6rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 4px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .detail-name::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--text-primary);
+            transition: width 0.8s ease 0.3s;
+        }
+
+        .display-area.active .detail-name::after {
+            width: 50px;
+        }
+
+        .detail-id {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Poem - Compact but readable */
+        .poem-container {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .poem-container::before {
+            content: '"';
+            position: absolute;
+            top: 4px;
+            left: 12px;
+            font-size: 3rem;
+            color: var(--text-muted);
+            opacity: 0.15;
+            font-family: 'Cormorant Garamond', serif;
+            line-height: 1;
+        }
+
+        .poem-text {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 0.9rem;
+            line-height: 2;
+            color: var(--text-secondary);
+            font-style: italic;
+            padding-left: 16px;
+            border-left: 2px solid var(--text-muted);
+            min-height: 60px;
+        }
+
+        .poem-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.1em;
+            background: var(--text-primary);
+            margin-left: 2px;
+            animation: blink 1s step-end infinite;
+            vertical-align: text-bottom;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Attribute Cards - 2x2 Grid */
+        .attr-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            flex-shrink: 0;
+            margin-bottom: 20px;
+        }
+
+        .attr-card {
+            background: var(--bg-card);
+            border-radius: 14px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .attr-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--text-primary);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+
+        .attr-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(26, 26, 46, 0.08);
+        }
+
+        .attr-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .attr-card .attr-icon {
+            font-size: 1.3rem;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .attr-card .attr-label {
+            font-size: 0.6rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 4px;
+        }
+
+        .attr-card .attr-value {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            transition: all 0.3s;
+        }
+
+        .attr-card:hover .attr-value {
+            transform: scale(1.03);
+            transform-origin: left;
+        }
+
+        /* Maturity ring */
+        .maturity-ring {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+        }
+
+        .maturity-ring svg {
+            transform: rotate(-90deg);
+        }
+
+        .maturity-ring circle {
+            fill: none;
+            stroke-width: 2.5;
+        }
+
+        .maturity-ring .bg {
+            stroke: rgba(26, 26, 46, 0.08);
+        }
+
+        .maturity-ring .progress {
+            stroke: var(--text-primary);
+            stroke-dasharray: 100;
+            stroke-dashoffset: 100;
+            transition: stroke-dashoffset 1.5s ease;
+        }
+
+        /* Right Panel */
+        .right-panel {
+            padding: 32px 36px;
+            overflow-y: auto;
+            height: 100%;
+        }
+
+        .right-panel::-webkit-scrollbar {
+            width: 4px;
+        }
+        .right-panel::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .right-panel::-webkit-scrollbar-thumb {
+            background: var(--text-muted);
+            border-radius: 2px;
+        }
+
+        .right-header {
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+
+        .right-header h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .right-header p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .apple-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+
+        .apple-card {
+            background: var(--bg-card);
+            border-radius: 18px;
+            padding: 14px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            border: 2px solid transparent;
+        }
+
+        .apple-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 16px 32px rgba(26, 26, 46, 0.1);
+            border-color: rgba(26, 26, 46, 0.08);
+        }
+
+        .apple-card.selected {
+            background: var(--bg-accent);
+            border-color: var(--text-primary);
+            box-shadow: 0 0 0 3px rgba(26, 26, 46, 0.04);
+        }
+
+        .apple-card .card-image {
+            width: 100%;
+            aspect-ratio: 4/3;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 12px;
+            position: relative;
+            background: var(--bg-deep);
+        }
+
+        .apple-card .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease, filter 0.5s ease;
+        }
+
+        .apple-card:hover .card-image img {
+            transform: scale(1.1);
+        }
+
+        .apple-card.selected .card-image img {
+            filter: saturate(1.2) contrast(1.05);
+        }
+
+        .card-oil-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.1;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            mix-blend-mode: multiply;
+        }
+
+        .apple-card .card-id {
+            font-size: 0.6rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+            margin-bottom: 3px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .apple-card .card-name {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            line-height: 1.2;
+        }
+
+        .card-stats {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
+        }
+
+        .card-stat {
+            text-align: left;
+        }
+
+        .card-stat .stat-label {
+            font-size: 0.58rem;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .card-stat .stat-value {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .card-preview {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: rgba(26, 26, 46, 0.85);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .apple-card:hover .card-preview {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* Add New Card */
+        .add-card {
+            background: transparent;
+            border: 2px dashed var(--text-muted);
+            border-radius: 18px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+            cursor: pointer;
+            transition: all 0.3s;
+            opacity: 0.5;
+        }
+
+        .add-card:hover {
+            opacity: 1;
+            border-color: var(--text-primary);
+            background: rgba(26, 26, 46, 0.02);
+        }
+
+        .add-card .plus {
+            font-size: 1.8rem;
+            font-weight: 300;
+            margin-bottom: 10px;
+            transition: transform 0.3s;
+        }
+
+        .add-card:hover .plus {
+            transform: rotate(90deg);
+        }
+
+        .add-card .add-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 3px;
+        }
+
+        .add-card .add-sub {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            .left-panel {
+                height: auto;
+                max-height: none;
+                position: relative;
+                min-height: 500px;
+            }
+            .right-panel {
+                height: auto;
+                max-height: none;
+            }
+            .apple-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .apple-grid {
+                grid-template-columns: 1fr;
+            }
+            .museum-title {
+                font-size: 1.8rem;
+            }
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Selection indicator */
+        .selection-line {
+            position: fixed;
+            left: 0;
+            width: 3px;
+            background: var(--text-primary);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 100;
+            opacity: 0;
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="nav-bar">
+        <span class="nav-arrow">‹</span>
+        <a href="#" class="active">Varieties</a>
+        <a href="#">Orchards</a>
+        <a href="#">Blooming</a>
+        <a href="#">Archive</a>
+        <span class="nav-arrow">›</span>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        
+        <!-- Left Panel - Scrollable -->
+        <aside class="left-panel" id="leftPanel">
+            <h1 class="museum-title">Apple<br>Museum</h1>
+            <div class="museum-subtitle">31 oil paintings · 31 universes</div>
+
+            <!-- Empty State -->
+            <div class="empty-state" id="emptyState">
+                <div class="empty-apple">🍎</div>
+                <div class="empty-text serif">
+                    点击右侧任意一颗苹果<br>
+                    让它在此处绽放
+                </div>
+            </div>
+
+            <!-- Active Display -->
+            <div class="display-area" id="displayArea">
+                <!-- Image Stage -->
+                <div class="image-stage" id="imageStage">
+                    <img id="displayImage" src="" alt="">
+                    <div class="oil-texture"></div>
+                    <div class="image-particles" id="imageParticles"></div>
+                    <div class="image-badge" id="imageBadge">油画 · 布面</div>
+                    <div class="color-dots" id="colorDots"></div>
+                </div>
+
+                <!-- Header -->
+                <div class="detail-header">
+                    <div class="detail-name" id="detailName">Apple Name</div>
+                    <div class="detail-id" id="detailId">VARIETY ID: {0000}</div>
+                </div>
+
+                <!-- Poem -->
+                <div class="poem-container">
+                    <div class="poem-text" id="poemText"></div>
+                </div>
+
+                <!-- Attributes -->
+                <div class="attr-grid">
+                    <div class="attr-card" id="attrMatured">
+                        <div class="maturity-ring">
+                            <svg width="30" height="30" viewBox="0 0 30 30">
+                                <circle class="bg" cx="15" cy="15" r="13"/>
+                                <circle class="progress" cx="15" cy="15" r="13" id="maturityProgress"/>
+                            </svg>
+                        </div>
+                        <span class="attr-icon">🌱</span>
+                        <div class="attr-label">Matured</div>
+                        <div class="attr-value" id="attrMaturedValue">—</div>
+                    </div>
+                    <div class="attr-card" id="attrMood">
+                        <span class="attr-icon">🎭</span>
+                        <div class="attr-label">Mood</div>
+                        <div class="attr-value" id="attrMoodValue">—</div>
+                    </div>
+                    <div class="attr-card" id="attrColor">
+                        <span class="attr-icon">🎨</span>
+                        <div class="attr-label">Color</div>
+                        <div class="attr-value" id="attrColorValue">—</div>
+                    </div>
+                    <div class="attr-card" id="attrState">
+                        <span class="attr-icon">✦</span>
+                        <div class="attr-label">State</div>
+                        <div class="attr-value" id="attrStateValue">—</div>
+                    </div>
+                </div>
+
+                <!-- Extra space at bottom for scrolling comfort -->
+                <div style="height: 40px; flex-shrink: 0;"></div>
+            </div>
+        </aside>
+
+        <!-- Right Panel - Grid -->
+        <main class="right-panel" id="rightPanel">
+            <div class="right-header">
+                <h2>Collection</h2>
+                <p>31 varieties · click to explore</p>
+            </div>
+
+            <div class="apple-grid" id="appleGrid">
+                <!-- Cards generated by JS -->
+            </div>
+        </main>
+
+    </div>
+
+    <!-- Selection indicator -->
+    <div class="selection-line" id="selectionLine"></div>
+
+    <script>
+        // ==================== APPLE DATA ====================
+        const appleData = [
+            {
+                id: "0024",
+                name: "Honeycrisp",
+                image: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=600&h=500&fit=crop",
+                matured: "2024.03.15",
+                mood: "甜蜜",
+                color: "绯红",
+                state: "完整",
+                colorHex: "#c62828",
+                poem: "这颗苹果在三月成熟，表皮带着清晨的露水光泽。我画它的时候，窗外正下着细雨，笔尖的绯红像是春天提前到来。",
+                badge: "布面油画 · 30×40cm"
+            },
+            {
+                id: "0012",
+                name: "Pink Lady",
+                image: "https://images.unsplash.com/photo-1570913149827-d2ac84ab3f9a?w=600&h=500&fit=crop",
+                matured: "2024.04.02",
+                mood: "羞涩",
+                color: "粉白",
+                state: "半切",
+                colorHex: "#f8bbd0",
+                poem: "切开它的时候，白色的果肉像是一页未写完的诗。粉色的边缘是少女脸颊上的红晕，不敢直视，却又忍不住回望。",
+                badge: "布面油画 · 25×35cm"
+            },
+            {
+                id: "0081",
+                name: "Braeburn",
+                image: "https://images.unsplash.com/photo-1619546813926-a78fa6372cd2?w=600&h=500&fit=crop",
+                matured: "2024.05.18",
+                mood: "倔强",
+                color: "青黄",
+                state: "切片",
+                colorHex: "#cddc39",
+                poem: "青黄的表皮下藏着酸涩的心事。我把它切成几片，每一片都是不同的表情——有的微笑，有的皱眉，有的沉默。",
+                badge: "木板油画 · 20×30cm"
+            },
+            {
+                id: "0019",
+                name: "Ambrosia",
+                image: "https://images.unsplash.com/photo-1584306670957-acf935f5033c?w=600&h=500&fit=crop",
+                matured: "2024.06.01",
+                mood: "慵懒",
+                color: "金黄",
+                state: "完整",
+                colorHex: "#ffc107",
+                poem: "六月的阳光把它晒成了蜜糖的颜色。我画得很慢，因为每一笔都像是在品尝——不是用嘴，是用眼睛。",
+                badge: "布面油画 · 40×50cm"
+            },
+            {
+                id: "0005",
+                name: "Granny Smith",
+                image: "https://images.unsplash.com/photo-1568702846914-96b305d2uj5?w=600&h=500&fit=crop",
+                matured: "2024.07.12",
+                mood: "清醒",
+                color: "翠绿",
+                state: "手持",
+                colorHex: "#4caf50",
+                poem: "有人握着它，像握着一颗小小的心脏。翠绿的表皮下是紧实的果肉，咬一口，清醒得像是一个未被说服的早晨。",
+                badge: "布面油画 · 35×45cm"
+            },
+            {
+                id: "0033",
+                name: "Fuji",
+                image: "https://images.unsplash.com/photo-1576179635662-9d1983e97e1e?w=600&h=500&fit=crop",
+                matured: "2024.08.20",
+                mood: "饱满",
+                color: "深红",
+                state: "堆叠",
+                colorHex: "#b71c1c",
+                poem: "它们堆在一起，像是一群窃窃私语的朋友。每一颗都在等待被选中，每一颗都假装不在乎。",
+                badge: "布面油画 · 50×60cm"
+            },
+            {
+                id: "0047",
+                name: "Gala",
+                image: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=600&h=500&fit=crop",
+                matured: "2024.09.05",
+                mood: "温柔",
+                color: "橙红",
+                state: "完整",
+                colorHex: "#ff5722",
+                poem: "九月的温柔都凝结在这层橙红的表皮上。我画它的时候，笔尖总是不由自主地放轻，怕惊扰了什么。",
+                badge: "木板油画 · 30×40cm"
+            },
+            {
+                id: "0056",
+                name: "Jazz",
+                image: "https://images.unsplash.com/photo-1619546813926-a78fa6372cd2?w=600&h=500&fit=crop",
+                matured: "2024.10.11",
+                mood: "跳跃",
+                color: "红黄",
+                state: "滚动",
+                colorHex: "#ff9800",
+                poem: "它像是要从画布上滚落。我故意画斜了桌面，让重力成为画面的一部分——静止中的运动，才是真实的。",
+                badge: "布面油画 · 25×35cm"
+            }
+        ];
+
+        // Fill to 31
+        const extraNames = ["Crimson Crisp", "Envy", "Pacific Rose", "Red Delicious", "Golden Delicious", "McIntosh", "Cortland", "Empire", "Idared", "Jonagold", "Macoun", "Mutsu", "Northern Spy", "Paula Red", "Rome", "Stayman", "Winesap", "York", "Arkansas Black", "Ashmead's Kernel", "Baldwin", "Ben Davis", "Black Twig"];
+        const moods = ["甜蜜", "苦涩", "慵懒", "清醒", "倔强", "羞涩", "饱满", "空洞", "温柔", "暴烈", "孤独", "喧闹", "宁静", "焦虑", "欢愉", "忧郁", "期待", "失落", "满足", "渴望", "疲惫", "兴奋", "淡然"];
+        const colors = ["绯红", "粉白", "青黄", "金黄", "翠绿", "深红", "橙红", "红黄", "紫褐", "苍白", "墨绿", "锈色", "靛蓝", "桃粉", "柠檬", "橄榄", "珊瑚", "琥珀", "象牙", "炭黑"];
+        const states = ["完整", "半切", "切片", "手持", "堆叠", "滚动", "悬挂", "坠落", "腐烂", "发芽", "被咬", "风干", "悬浮", "倒影", "破碎", "愈合", "等待", "告别"];
+        const poems = [
+            "这颗苹果在画布上停留了很久，久到我开始怀疑它是否愿意被吃掉。",
+            "我画它的时候，它正在慢慢变暗，像是一个不愿醒来的梦。",
+            "表皮上的斑点不是瑕疵，是时间的指纹。",
+            "它悬挂在树枝上，像一颗拒绝落地的决心。",
+            "切开的瞬间，白色的果肉暴露在阳光下，像是一个被揭穿的谎言。",
+            "有人咬了一口，留下齿痕。那是人类与果实之间最古老的对话。",
+            "它腐烂了，但我画下了它最骄傲的时刻。",
+            "青色的表皮下，藏着一颗尚未成熟的心。",
+            "我把它们堆在一起，像是一座小小的纪念碑。",
+            "这颗苹果很小，小到几乎被忽略。但我在它身上看到了整个果园。",
+            "红色的部分太红了，红得像是在抗议什么。",
+            "它躺在那里，安静得像是一个被接受的结局。",
+            "我画了它的影子，比它本身还要真实。",
+            "果皮上的光泽是谎言，果肉里的褐色才是真相。",
+            "它从桌上滚落，我抓住了那一瞬间——不是苹果，是时间本身。",
+            "有人把它切成了星星的形状，每一角都是一个未完成的愿望。",
+            "我画了三遍才满意。第一遍太甜，第二遍太苦，第三遍刚刚好。",
+            "它的一半在光里，一半在影里，像我一样。",
+            "表皮皱了，但颜色更浓了。衰老让它的灵魂显露出来。",
+            "我把它画在蓝色背景上，不是天空，是深海。",
+            "这颗苹果没有柄，像是被谁粗暴地摘下来的。",
+            "我画了它的内部结构，像画一颗心脏的解剖图。",
+            "它和其他苹果挤在一起，但它是孤独的。"
+        ];
+        const colorHexes = ["#c62828", "#f8bbd0", "#cddc39", "#ffc107", "#4caf50", "#b71c1c", "#ff5722", "#ff9800", "#795548", "#fafafa", "#33691e", "#8d6e63", "#3f51b5", "#f48fb1", "#fff176", "#827717", "#ff7043", "#ff8f00", "#fffde7", "#212121"];
+
+        const allImages = [
+            "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=600&h=500&fit=crop",
+            "https://images.unsplash.com/photo-1570913149827-d2ac84ab3f9a?w=600&h=500&fit=crop",
+            "https://images.unsplash.com/photo-1619546813926-a78fa6372cd2?w=600&h=500&fit=crop",
+            "https://images.unsplash.com/photo-1584306670957-acf935f5033c?w=600&h=500&fit=crop",
+            "https://images.unsplash.com/photo-1568702846914-96b305d2uj5?w=600&h=500&fit=crop",
+            "https://images.unsplash.com/photo-1576179635662-9d1983e97e1e?w=600&h=500&fit=crop"
+        ];
+
+        while (appleData.length < 31) {
+            const idx = appleData.length;
+            const month = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
+            const day = String(Math.floor(Math.random() * 28) + 1).padStart(2, '0');
+            appleData.push({
+                id: String(1000 + idx).slice(1),
+                name: extraNames[idx - 8] || `Apple ${idx + 1}`,
+                image: allImages[idx % allImages.length],
+                matured: `2024.${month}.${day}`,
+                mood: moods[idx % moods.length],
+                color: colors[idx % colors.length],
+                state: states[idx % states.length],
+                colorHex: colorHexes[idx % colorHexes.length],
+                poem: poems[idx % poems.length],
+                badge: `布面油画 · ${20 + (idx % 5) * 5}×${30 + (idx % 5) * 5}cm`
+            });
+        }
+
+        let selectedIndex = -1;
+        let typewriterInterval = null;
+
+        // ==================== RENDER GRID ====================
+        function renderGrid() {
+            const grid = document.getElementById('appleGrid');
+            
+            appleData.forEach((apple, index) => {
+                const card = document.createElement('div');
+                card.className = 'apple-card';
+                card.dataset.index = index;
+                
+                card.innerHTML = `
+                    <div class="card-image">
+                        <img src="${apple.image}" alt="${apple.name}" loading="lazy">
+                        <div class="card-oil-overlay"></div>
+                        <div class="card-preview">点击查看</div>
+                    </div>
+                    <div class="card-id">VARIETY ID: {${apple.id}}</div>
+                    <div class="card-name">${apple.name}</div>
+                    <div class="card-stats">
+                        <div class="card-stat">
+                            <div class="stat-label">Matured</div>
+                            <div class="stat-value">${apple.matured}</div>
+                        </div>
+                        <div class="card-stat">
+                            <div class="stat-label">Mood</div>
+                            <div class="stat-value">${apple.mood}</div>
+                        </div>
+                    </div>
+                `;
+                
+                card.addEventListener('click', () => selectApple(index));
+                grid.appendChild(card);
+            });
+
+            // Add card
+            const addCard = document.createElement('div');
+            addCard.className = 'add-card';
+            addCard.innerHTML = `
+                <div class="plus">+</div>
+                <div class="add-title">Add New Variety</div>
+                <div class="add-sub">Catalog new painting</div>
+            `;
+            grid.appendChild(addCard);
+        }
+
+        // ==================== SELECT APPLE ====================
+        function selectApple(index) {
+            if (selectedIndex === index) return;
+            
+            const apple = appleData[index];
+            selectedIndex = index;
+
+            // Update card states
+            document.querySelectorAll('.apple-card').forEach((card, i) => {
+                card.classList.toggle('selected', i === index);
+            });
+
+            // Hide empty state, show display
+            document.getElementById('emptyState').style.display = 'none';
+            const displayArea = document.getElementById('displayArea');
+            displayArea.classList.remove('active');
+            
+            // Force reflow
+            void displayArea.offsetWidth;
+            displayArea.classList.add('active');
+
+            // Scroll left panel to top smoothly
+            document.getElementById('leftPanel').scrollTo({ top: 0, behavior: 'smooth' });
+
+            // Update image with crossfade
+            const img = document.getElementById('displayImage');
+            img.style.opacity = '0';
+            img.style.transform = 'scale(1.1)';
+            
+            setTimeout(() => {
+                img.src = apple.image;
+                img.onload = () => {
+                    img.style.opacity = '1';
+                    img.style.transform = 'scale(1)';
+                };
+            }, 300);
+
+            // Update badge
+            document.getElementById('imageBadge').textContent = apple.badge;
+
+            // Generate color dots
+            const dotsContainer = document.getElementById('colorDots');
+            dotsContainer.innerHTML = '';
+            const palette = [apple.colorHex, '#1a1a2e', '#f5ddd8', '#d8d4e0'];
+            palette.forEach((color, i) => {
+                const dot = document.createElement('div');
+                dot.className = 'color-dot';
+                dot.style.background = color;
+                dot.style.animationDelay = `${i * 0.1}s`;
+                dot.title = i === 0 ? apple.color : `色板 ${i + 1}`;
+                dotsContainer.appendChild(dot);
+            });
+
+            // Generate particles
+            generateParticles();
+
+            // Update text with typewriter
+            document.getElementById('detailName').textContent = apple.name;
+            document.getElementById('detailId').textContent = `VARIETY ID: {${apple.id}}`;
+            
+            // Typewriter poem
+            const poemEl = document.getElementById('poemText');
+            poemEl.innerHTML = '<span class="poem-cursor"></span>';
+            clearInterval(typewriterInterval);
+            
+            let charIndex = 0;
+            const text = apple.poem;
+            typewriterInterval = setInterval(() => {
+                if (charIndex < text.length) {
+                    poemEl.innerHTML = text.slice(0, charIndex + 1) + '<span class="poem-cursor"></span>';
+                    charIndex++;
+                } else {
+                    poemEl.innerHTML = text;
+                    clearInterval(typewriterInterval);
+                }
+            }, 35);
+
+            // Update attributes with stagger
+            const attrs = [
+                { id: 'attrMaturedValue', value: apple.matured, icon: '🌱' },
+                { id: 'attrMoodValue', value: apple.mood, icon: '🎭' },
+                { id: 'attrColorValue', value: apple.color, icon: '🎨' },
+                { id: 'attrStateValue', value: apple.state, icon: '✦' }
+            ];
+
+            attrs.forEach((attr, i) => {
+                const el = document.getElementById(attr.id);
+                const card = el.closest('.attr-card');
+                card.querySelector('.attr-icon').textContent = attr.icon;
+                
+                setTimeout(() => {
+                    el.style.opacity = '0';
+                    el.style.transform = 'translateY(8px)';
+                    setTimeout(() => {
+                        el.textContent = attr.value;
+                        el.style.opacity = '1';
+                        el.style.transform = 'translateY(0)';
+                    }, 150);
+                }, 500 + i * 120);
+            });
+
+            // Animate maturity ring
+            setTimeout(() => {
+                const progress = document.getElementById('maturityProgress');
+                const circumference = 2 * Math.PI * 13;
+                const percent = 60 + Math.random() * 40;
+                const offset = circumference - (percent / 100) * circumference;
+                progress.style.strokeDashoffset = offset;
+            }, 700);
+
+            // Update selection line position
+            updateSelectionLine(index);
+        }
+
+        // ==================== PARTICLES ====================
+        function generateParticles() {
+            const container = document.getElementById('imageParticles');
+            container.innerHTML = '';
+            
+            for (let i = 0; i < 10; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.bottom = '-10px';
+                p.style.animationDelay = `${Math.random() * 3}s`;
+                p.style.animationDuration = `${2 + Math.random() * 3}s`;
+                container.appendChild(p);
+            }
+        }
+
+        // ==================== SELECTION LINE ====================
+        function updateSelectionLine(index) {
+            const cards = document.querySelectorAll('.apple-card');
+            const card = cards[index];
+            if (!card) return;
+            
+            const rect = card.getBoundingClientRect();
+            const line = document.getElementById('selectionLine');
+            
+            line.style.top = rect.top + 'px';
+            line.style.height = rect.height + 'px';
+            line.style.opacity = '1';
+            
+            setTimeout(() => {
+                line.style.opacity = '0';
+            }, 800);
+        }
+
+        // ==================== IMAGE STAGE INTERACTIONS ====================
+        const imageStage = document.getElementById('imageStage');
+        let isDragging = false;
+        let startX, startY;
+
+        imageStage.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            imageStage.style.cursor = 'grabbing';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const dx = (e.clientX - startX) * 0.3;
+            const dy = (e.clientY - startY) * 0.3;
+            const img = document.getElementById('displayImage');
+            img.style.transform = `scale(1.3) translate(${dx}px, ${dy}px)`;
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (!isDragging) return;
+            isDragging = false;
+            imageStage.style.cursor = 'grab';
+            const img = document.getElementById('displayImage');
+            img.style.transform = 'scale(1)';
+        });
+
+        // ==================== INIT ====================
+        renderGrid();
+
+        // Select first by default after delay
+        setTimeout(() => {
+            selectApple(0);
+        }, 600);
+    </script>
+</body>
+</html>
